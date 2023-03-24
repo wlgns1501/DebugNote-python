@@ -1,11 +1,10 @@
 from django.urls import path
-from .views import *
+from .api.views import SignUpView, SignInView
 
 
 urlpatterns = [
-    # path("v1/test", UserView.as_view(), name="test"),
-    path("", UserView.as_view()),
-    # path("signin/", UserView.signin, name="signin"),
+    path("signup", SignUpView.as_view()),
+    path("signin", SignInView.as_view())
 ]
 
 # urlpatterns = format_suffix_patterns(urlpatterns)
