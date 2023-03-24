@@ -13,40 +13,36 @@ from .open_api_params import signup_params
 
 class UserView(APIView):
     serializer_class = BaseUserSeiralizer
-    qureyset = User.objects.all()
+    queryset = User.objects.all()
+
 
     def get(self, request):
-        page_num = int(request.GET.get("page", 1))
-        limit_num = int(request.GET.get("limit", 10))
-        start_num = (page_num - 1) * limit_num
-        end_num = limit_num * page_num
         users = User.objects.all()
-        total_users = users.count()
+        print(users)
 
-        serializer = self.serializer_class(users[start_num:end_num], many=True)
+        serializer = self.serializer_class(users, many=True)
+        print(serializer.data)
         return Response(
             {
                 "status": "success",
-                "total": total_users,
-                "page": page_num,
-                "last_page": math.ceil(total_users / limit_num),
                 "users": serializer.data,
             }
         )
 
     @swagger_auto_schema(tags=['유저 생성'], request_body = BaseUserSeiralizer)
     def post(self, request):
-        try :
-            data = json.loads(request.body)
-            user = User(email = data['email'], password= data['password'])
-            user.save()
-            print(user)
+        
+        serializer = self.serializer_class(data=json.loads(request.body))
+        if serializer.is_valid():
+            serializer.save()
             return Response(
-                {"status": "success", "user" : user},
+                {"status": "success", "user" : serializer.data},
                 status=status.HTTP_201_CREATED,
             )
-        except :
+        else :
             return Response(
-                {"status": "fail", "message": "error"},
+                {"status": "fail", "message": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+       
