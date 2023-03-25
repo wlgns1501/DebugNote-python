@@ -1,5 +1,10 @@
 {
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": true,
-  "python.linting.mypyEnabled": false
+  "python.linting.mypyEnabled": false,
+  "python.linting.pylintArgs": ["--init-hook"],
+  // "python.analysis.diagnosticSeverityOverrides": {
+  //   "reportMissingImports": "none"
+  // },
+  "python.analysis.extraPaths": ["app", "another/path/etc"]
 }

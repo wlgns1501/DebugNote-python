@@ -3,14 +3,13 @@ import math
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-
-from ..models import User
-
-from .serializers import SignInSerializer, SignUpSeiralizer
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from drf_yasg.utils import swagger_auto_schema
 import bcrypt
+from .serializers import SignInSerializer, SignUpSeiralizer
+from ..models import User
+
 
 
 class SignUpView(APIView):
@@ -21,14 +20,9 @@ class SignUpView(APIView):
     def post(self, request):
         body = json.loads(request.body)
 
-        hashed_password = bcrypt.hashpw(body['password'].encode('utf-8'), bcrypt.gensalt())
-
-        decode_password = hashed_password.decode('utf-8')
-
-        body['password'] = decode_password
-        
-        serializer = self.serializer_class(data=json.loads(request.body))
+        serializer = self.serializer_class(data=body)
         if serializer.is_valid():
+            
             serializer.save()
             return Response(
                 {"status": "success", "user" : serializer.data},
@@ -40,17 +34,14 @@ class SignUpView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-       
-
-
 class SignInView(APIView) :
     serializer_class = SignInSerializer
     queryset = User.objects.all()
 
     @swagger_auto_schema(tags=['로그인'], request_body = SignInSerializer)
-    def signin(self, request) :
+    def post(self, request) :
         body = json.loads(request.body)
-
+    
         serializer = self.serializer_class(data=body)
         serializer.is_valid(raise_exception=True)
 

@@ -50,20 +50,28 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['email', 'password']
 
 
-    def __str__(self):
-            return self.email
+    # def __str__(self):
+    #   return self.email
     
+    def getPassword(email):
+        user = User.objects.get(email=email)
+        return user.password
+
+    def get_user_by_email(email:str):
+        user = User.objects.get(email=email)
+        print(user)
+        return user
 
     @property
     def token(self):
-         return self._generate_jwt_token()
+      return self._generate_jwt_token()
     
     def _generate_jwt_token(self):
-         dt = datetime.now() + timedelta(days=60)
+      dt = datetime.now() + timedelta(days=60)
 
-         token = jwt.encode({
-              'id' : self.id,
-              'exp' : dt.utcfromtimestamp(dt.timestamp())
-         },  settings.SECRET_KEY, algorithm='HS256')
+      token = jwt.encode({
+        'id' : self.id,
+        'exp' : dt.utcfromtimestamp(dt.timestamp())
+      },  settings.SECRET_KEY, algorithm='HS256')
 
-         return token
+      return token
