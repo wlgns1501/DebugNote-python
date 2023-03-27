@@ -14,7 +14,6 @@ def decoded_password(hashed_password : bytes) :
 class SignUpSeiralizer(serializers.ModelSerializer):
 
     password = serializers.CharField(max_length=128, min_length=8, write_only=True)
-    token = serializers.CharField(max_length=255, read_only=True)
 
     def create(self, validated_data):
         input_hashed_password:bytes = hashed_password(validated_data['password'].encode('utf-8'))
@@ -30,7 +29,7 @@ class SignUpSeiralizer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "nickname", "password", "token"]
+        fields = ["id", "email", "nickname", "password"]
 
 
 class SignInSerializer(serializers.ModelSerializer):
@@ -38,6 +37,7 @@ class SignInSerializer(serializers.ModelSerializer):
     nickname = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=255, write_only=True)
     last_login = serializers.CharField(max_length=255, read_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
 
     
     def validate(self, data):
@@ -85,7 +85,8 @@ class SignInSerializer(serializers.ModelSerializer):
         return {
             'email' : user.email,
             'username' : user.nickname,
-            'last_login' : user.last_login
+            'last_login' : user.last_login,
+            'token' : user.token
         }
 
     class Meta :

@@ -59,7 +59,6 @@ class User(AbstractBaseUser):
 
     def get_user_by_email(email:str):
         user = User.objects.get(email=email)
-        print(user)
         return user
 
     @property
@@ -71,6 +70,7 @@ class User(AbstractBaseUser):
 
       token = jwt.encode({
         'id' : self.id,
+        'email' : self.email,
         'exp' : dt.utcfromtimestamp(dt.timestamp())
       },  settings.SECRET_KEY, algorithm='HS256')
 
