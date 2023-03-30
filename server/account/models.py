@@ -76,3 +76,4 @@ class User(AbstractBaseUser):
       },  settings.SECRET_KEY, algorithm='HS256')
 
       return token
+

@@ -4,15 +4,33 @@ from blog.models import Article
 from account.api.serializers import UserSerializer
 
 
-
 class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
     content = serializers.CharField(max_length=500)
-    user_id = serializers.IntegerField()
+    user_id = serializers.IntegerField(write_only = True)
     createdAt = serializers.DateTimeField(read_only=True)
     user = UserSerializer(many=False, read_only=True)
 
     def create(self, validated_data) :
+        title = validated_data['title']
+        content = validated_data['content']
+        user_id = validated_data['user_id']
+
+        if title is None :
+            return serializers.ValidationError(
+                '제목을 입력하지 않았습니다.'
+            )
+
+        if content is None :
+            return serializers.ValidationError(
+                '본문을 입력하지 않았습니다.'
+            )
+        
+        if user_id is None :
+            return serializers.ValidationError(
+                '유저 Id를 입력하지 않았습니다.'
+            )
+
         article = Article.objects.create(
             title = validated_data['title'],
             content = validated_data['content'],
@@ -20,9 +38,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         )
 
         return article
-
-    # def __str__(self):
-    #     return self.title
 
     class Meta:
         model = Article

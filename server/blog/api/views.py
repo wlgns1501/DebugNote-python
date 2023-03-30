@@ -2,14 +2,21 @@ import json
 from django.shortcuts import render
 from django.db import transaction
 from .serializers import ArticleSerializer, ArticleDetailSerializer
+from .serializers import ArticleSerializer
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
 from ..models import Article
 from rest_framework.permissions import IsAuthenticated
 from account.authentication import JWTAuthentication
+
+# class ArticleViewSet(viewsets.ModelViewSet):
+#     authentication_classes = [JWTAuthentication]
+#     queryset = Article.objects.all()
+#     serializer_class = ArticleSerializer
+
 
 class ArticleView(APIView):
     serializer_class = ArticleSerializer
@@ -107,10 +114,14 @@ class ArticleDetailView(APIView):
         if not article :
             return Response({"success" : False, "data" : "다른 사람의 글을 삭제할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-        article = Article.objects.get(id=article_id)
-        with transaction.atomic() :
-            article.delete()
 
-        return Response({"success" : True}, status=status.HTTP_200_OK)
+        try:
+            with transaction.atomic() :
+                article.delete()
+
+            return Response({"success" : True}, status=status.HTTP_200_OK)
+
+        except : 
+            return Response({"success" : False}, status=status.HTTP_400_BAD_REQUEST)    
 
         

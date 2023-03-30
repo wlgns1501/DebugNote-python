@@ -32,7 +32,7 @@ class SignUpSeiralizer(serializers.ModelSerializer):
         fields = ["id", "email", "nickname", "password"]
 
 
-class SignInSerializer(serializers.ModelSerializer):
+class   SignInSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
     nickname = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=255, write_only=True)
@@ -64,7 +64,7 @@ class SignInSerializer(serializers.ModelSerializer):
 
         if not check:
             raise serializers.ValidationError(
-                'A user with this email and password was not found'
+                '비밀 번호가 일치하지 않습니다.'
             )
         
         # if not user.is_active:
@@ -95,6 +95,24 @@ class SignInSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(max_length = 100)
+    password = serializers.CharField(max_length = 100, write_only=True)
+    nickname = serializers.CharField(max_length = 100)
+    token = serializers.CharField(read_only=True)
+
+    def update(self, instance, validated_data):
+        new_password : bytes = validated_data.get('password').encode('utf-8')
+        hashed_new_password = hashed_password(new_password)
+        decoded_new_password = decoded_password(hashed_new_password)
+
+        
+
+        instance.email = validated_data.get('email', instance.email)
+        instance.password = decoded_new_password
+        instance.nickname = validated_data.get('nickname', instance.nickname)
+        instance.save()
+
+        return instance
     class Meta:
         model = User
-        fields = ['id', 'email']
+        fields = ['id', 'email', 'password' ,'nickname', 'token']

@@ -1,8 +1,10 @@
-import { Component, createSignal } from "solid-js";
+import { Component, createSignal, Switch } from "solid-js";
 
-const Main: Component = () => {
-  const [isAuth, setIsAuth] = createSignal(false);
+interface MainProps {
+  isAuth: any;
+}
 
+const Main: Component<MainProps> = (props) => {
   return (
     <div>
       <h1>debugnote</h1>

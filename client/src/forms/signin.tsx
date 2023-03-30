@@ -5,16 +5,18 @@ import {
   createResource,
   createSignal,
 } from "solid-js";
-import { Body } from "solid-start";
+import { Body, redirect } from "solid-start";
 
 interface SignInFormProps {
-  setIsAuth: boolean;
+  setIsAuth: any;
+  setIsToken: any;
 }
 
-interface Data {
+type Response = {
   email: string;
-  password: string;
-}
+  token: string;
+  last_login: Date;
+};
 
 const SignInForm: Component<SignInFormProps> = (props) => {
   const [userInfo, setUserInfo] = createSignal({
@@ -22,21 +24,33 @@ const SignInForm: Component<SignInFormProps> = (props) => {
     password: "",
   });
 
-  const loginFetch = async () => {
-    return await fetch("http://127.0.0.1:8000/auth/signin", {
+  async function handleLogin() {
+    const loginFetch = await fetch("http://127.0.0.1:8000/auth/signin", {
       method: "post",
       body: JSON.stringify(userInfo()),
-    }).then(console.log);
-  };
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .catch((err) => {
+        return err;
+      });
 
-  // createEffect(() => {});
+    const response = await loginFetch;
+    const data: Response = response.data;
+
+    if (data.token) {
+      props.setIsToken(data.token);
+      props.setIsAuth(true);
+    }
+  }
 
   return (
     <div>
       <form
         onsubmit={(e) => {
           e.preventDefault();
-          loginFetch();
+          handleLogin();
         }}
       >
         id :
