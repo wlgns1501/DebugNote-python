@@ -98,7 +98,7 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.CharField(max_length = 100)
     password = serializers.CharField(max_length = 100, write_only=True)
     nickname = serializers.CharField(max_length = 100)
-    token = serializers.CharField(read_only=True)
+    # token = serializers.CharField(read_only=True)
 
     def update(self, instance, validated_data):
         new_password : bytes = validated_data.get('password').encode('utf-8')
@@ -115,4 +115,4 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     class Meta:
         model = User
-        fields = ['id', 'email', 'password' ,'nickname', 'token']
+        fields = ['id', 'email', 'password' ,'nickname']

@@ -55,7 +55,6 @@ class SignInView(APIView) :
 
         if serializer.is_valid() :
             response = JsonResponse({'data' : serializer.data, 'status' : status.HTTP_200_OK })
-            print(response)
             response.set_cookie("access_token", serializer.data['token'], expires= datetime.now() + timedelta(days=2) )
             return response
 

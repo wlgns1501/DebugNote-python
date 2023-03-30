@@ -21,7 +21,7 @@ class JWTAuthentication(authentication.BaseAuthentication)  :
         jwt_token = request.COOKIES.get('access_token')
 
         if jwt_token is None:
-            return None
+            raise AuthenticationFailed('로그인이 필요한 기능입니다.')
         
         try:
             payload= jwt.decode(jwt_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])

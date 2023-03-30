@@ -1,5 +1,5 @@
 from django.urls import path
-from .api.views import ArticleView, ArticleDetailView
+from .api.views import ArticleView, ArticleDetailView, CommentView,CommentDetailView
 # from .api.views import ArticleViewSet
 
 # article_list = ArticleViewSet.as_view({
@@ -15,7 +15,7 @@ from .api.views import ArticleView, ArticleDetailView
 
 urlpatterns = [
     path('article/', ArticleView.as_view(), name='article'),
-    path('article/<int:article_id>/', ArticleDetailView.as_view(), name='articleDetail')
-    # path('article/', article_list, name='article'),
-    # path('article/<int:article_id>/', article_detail, name='articleDetail')
+    path('article/<int:article_id>/', ArticleDetailView.as_view(), name='articleDetail'),
+    path('article/<int:article_id>/comment/', CommentView.as_view(), name='comment'),
+    path('article/<int:article_id>/comment/<int:comment_id>', CommentDetailView.as_view(), name='comment'),
 ]
