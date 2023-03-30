@@ -7,30 +7,29 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
-from ..models import Article, Comment
+from ..models import Article, Article_Like, Comment
 from rest_framework.permissions import IsAuthenticated
 from account.authentication import JWTAuthentication
 from drf_yasg import openapi
 from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import CursorPagination
 
-# class ArticleViewSet(viewsets.ModelViewSet):
-#     authentication_classes = [JWTAuthentication]
-#     queryset = Article.objects.all()
-#     serializer_class = ArticleSerializer
-
+class ArticlePagination(CursorPagination):
+    page_size = 10
+    ordering = 'createdAt'
 
 class ArticleView(APIView):
     serializer_class = ArticleSerializer
-    authentication_classes = [JWTAuthentication]
     queryset = Article.objects.all()
+    pagination_class = ArticlePagination
 
     @swagger_auto_schema(tags=['아티클 리스트'])
     def get(self, request) :
         try:
-            articles = Article.objects.all().order_by('-createdAt')
+            articles = Article.objects.select_related('user').all().order_by('-createdAt')
         except Article.DoesNotExist : 
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
-
 
         serializer = ArticleSerializer(articles, many=True)
         
@@ -38,11 +37,24 @@ class ArticleView(APIView):
 
 
     @transaction.atomic
-    @swagger_auto_schema(tags=['아티클 생성'], request_body=ArticleSerializer)
+    @method_decorator(name = '아티클 생성', decorator=swagger_auto_schema(
+            tags=['아티클 생성'], 
+            request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT, 
+            properties={
+                'title' : openapi.Schema(type=openapi.TYPE_STRING, description='제목'),
+                'content' : openapi.Schema(type=openapi.TYPE_STRING, description='내용')
+            }))
+    )
     def post(self, request) :
-        user = JWTAuthentication.authenticate(self, request)
-        body = json.loads(request.body)
+        authentication_classes = [JWTAuthentication]
+
+        payload = JWTAuthentication.authenticate(self, request)
+        user_id = payload[1]['id']
         
+        body = json.loads(request.body)
+        body['user_id'] = user_id
+
         with transaction.atomic():
             serializer = self.serializer_class(data=body)
 
@@ -57,7 +69,6 @@ class ArticleView(APIView):
 
 class ArticleDetailView(APIView):
     serializer_class = ArticleDetailSerializer
-    authentication_classes = [JWTAuthentication]
 
     def get_object(self, article_id: int, user_id:int) :
         try:
@@ -84,8 +95,18 @@ class ArticleDetailView(APIView):
     
 
     @transaction.atomic
-    @swagger_auto_schema(tags=['아티클 수정하기'], request_body=ArticleDetailSerializer)
+    @method_decorator(name = '아티클 생성', decorator=swagger_auto_schema(
+            tags=['아티클 생성'], 
+            request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT, 
+            properties={
+                'title' : openapi.Schema(type=openapi.TYPE_STRING, description='제목'),
+                'content' : openapi.Schema(type=openapi.TYPE_STRING, description='내용')
+            }))
+    )
     def patch(self, request, article_id : int):
+        authentication_classes = [JWTAuthentication]
+
         user = JWTAuthentication.authenticate(self, request)
         user_id = user[1]['id']
 
@@ -110,6 +131,8 @@ class ArticleDetailView(APIView):
     @transaction.atomic
     @swagger_auto_schema(tags=['아티클 삭제하기'])
     def delete(self, request, article_id:int) :
+        authentication_classes = [JWTAuthentication]
+
         user = JWTAuthentication.authenticate(self, request)
         user_id = user[1]['id']
 
@@ -129,11 +152,16 @@ class ArticleDetailView(APIView):
             return Response({"success" : False}, status=status.HTTP_400_BAD_REQUEST)    
 
         
+class CommentPagination(CursorPagination):
+    page_size = 5
+    ordering = 'createdAt'
+
 
 class CommentView(APIView):
     serializer_class = CommentSerializer
-    authentication_classes = [JWTAuthentication]
     queryset = Comment.objects.all()
+    pagination_class = CommentPagination
+
 
     @swagger_auto_schema(tags=['댓글 리스트'])
     def get(self, request, article_id : int):
@@ -142,7 +170,7 @@ class CommentView(APIView):
             comments = Comment.objects.filter(article_id=article_id).order_by('-createdAt')
         except Comment.DoesNotExist:
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
-        print(comments)
+
         serializer = self.serializer_class(comments, many=True)      
 
         return Response({'data': serializer.data, 'success' : True}, status=status.HTTP_200_OK)
@@ -157,6 +185,8 @@ class CommentView(APIView):
         }))
     )
     def post(self, request, article_id):
+        authentication_classes = [JWTAuthentication]
+
         payload = JWTAuthentication.authenticate(self, request)
         user_id = payload[1]['id']
 
@@ -176,7 +206,6 @@ class CommentView(APIView):
 
 class CommentDetailView(APIView):
     serializer_class = CommentDetailSerializer
-    authentication_classes = [JWTAuthentication]
     queryset = Comment.objects.all()
 
 
@@ -206,6 +235,8 @@ class CommentDetailView(APIView):
         }))
     )
     def patch(self, request, comment_id:int, article_id:int) :
+        authentication_classes = [JWTAuthentication]
+
         payload = JWTAuthentication.authenticate(self, request)
         user_id = payload[1]['id']
 
@@ -224,4 +255,25 @@ class CommentDetailView(APIView):
         else :
             return Response({"success" : False, 'data' : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+class ArticleLikeView(APIView):
+    serializer_class = ArticleLikeSerializer
+    queryset = Article_Like.objects.all()
+    authentication_classes = [JWTAuthentication]
 
+
+    @transaction.Atomic
+    async def post(self, request, article_id : int) :
+        payload = JWTAuthentication.authenticate(self, request)
+        user_id = payload[1]['id']
+
+        with transaction.atomic():
+            serializer = await self.serializer_class({article_id, user_id})
+
+
+        if serializer.is_valid():
+            serializer.save()
+        
+            return Response({"success" : True, "data" : serializer.data}, status=status.HTTP_200_OK)
+
+        else :
+            return Response({"success" : False, 'data' : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

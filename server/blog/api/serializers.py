@@ -1,17 +1,15 @@
 from django.utils import timezone
 from rest_framework import serializers
-from blog.models import Article, Comment
+from blog.models import *
 from account.api.serializers import UserSerializer
-
 
 class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
     content = serializers.CharField(max_length=500)
     user_id = serializers.IntegerField(write_only = True)
     createdAt = serializers.DateTimeField(read_only=True)
-    # user = UserSerializer(read_only=True)
-    user = serializers.StringRelatedField(read_only=True)
-    
+    user = UserSerializer(read_only=True)
+    # user = serializers.StringRelatedField(read_only=True)
 
     def create(self, validated_data) :
         title = validated_data['title']
@@ -52,7 +50,9 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     createdAt = serializers.DateTimeField(read_only = True)
     updatedAt = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
-    user = serializers.StringRelatedField(read_only=True)
+    # user = serializers.StringRelatedField(read_only=True)
+    user = UserSerializer(read_only=True)
+
     
 
     def update(self, instance, validated_data):
@@ -81,7 +81,9 @@ class CommentSerializer(serializers.ModelSerializer):
     updatedAt = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField(write_only=True)
-    user = serializers.StringRelatedField(read_only=True, many=False)
+    # user = serializers.StringRelatedField(read_only=True, many=False)
+    user = UserSerializer(read_only=True)
+
 
     def create(self, validated_data):
         content = validated_data['content']
@@ -112,7 +114,9 @@ class CommentDetailSerializer(serializers.ModelSerializer):
     updatedAt = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(read_only=True)
     article_id = serializers.IntegerField(read_only=True)
-    user = serializers.StringRelatedField(read_only=True, many=False)
+    # user = serializers.StringRelatedField(read_only=True, many=False)
+    user = UserSerializer(read_only=True)
+
 
 
     def update(self, instance, validated_data):
@@ -125,3 +129,29 @@ class CommentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model= Comment
         fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'createdAt', 'updatedAt']
+
+
+class ArticleLikeSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only = True)
+    article_id = serializers.IntegerField(write_only = True)
+    createdAt = serializers.DateTimeField(read_only=True)
+
+    def post(self, validated_data) :
+        article_id = validated_data['article_id']
+        user_id = validated_data['user_id']
+
+        if not article_id:
+            return serializers.ValidationError(
+                '댓글을 입력하지 않았습니다.'
+            )
+        if not user_id : 
+            return serializers.ValidationError(
+                '댓글을 입력하지 않았습니다.'
+            )
+        
+        liked_article = Article_Like.objects.create(
+            user_id = user_id,
+            article_id = article_id
+        )
+
+        return liked_article
