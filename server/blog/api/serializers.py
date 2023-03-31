@@ -7,7 +7,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
     content = serializers.CharField(max_length=500)
     user_id = serializers.IntegerField(write_only = True)
-    createdAt = serializers.DateTimeField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
     user = UserSerializer(read_only=True)
     # user = serializers.StringRelatedField(read_only=True)
 
@@ -41,14 +41,14 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'content', 'createdAt', 'user_id', 'user']
+        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user']
 
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
     content = serializers.CharField(max_length=500)
-    createdAt = serializers.DateTimeField(read_only = True)
-    updatedAt = serializers.DateTimeField(read_only=True)
+    created_at = serializers.DateTimeField(read_only = True)
+    updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     # user = serializers.StringRelatedField(read_only=True)
     user = UserSerializer(read_only=True)
@@ -58,7 +58,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.content = validated_data.get('content', instance.content)
-        instance.updatedAt= timezone.now()
+        instance.updated_at= timezone.now()
         instance.save()
         return instance
         
@@ -71,14 +71,14 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         # return article
     class Meta :
         model = Article
-        fields = ['id', 'title', 'content', 'createdAt' , 'updatedAt', 'user_id', 'user']
+        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user_id', 'user']
 
 
 
 class CommentSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=100)
-    createdAt = serializers.DateTimeField(read_only = True)
-    updatedAt = serializers.DateTimeField(read_only=True)
+    created_at = serializers.DateTimeField(read_only = True)
+    updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField(write_only=True)
     # user = serializers.StringRelatedField(read_only=True, many=False)
@@ -105,13 +105,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model= Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'createdAt', 'updatedAt']
+        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
 
 
 class CommentDetailSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=100)
-    createdAt = serializers.DateTimeField(read_only = True)
-    updatedAt = serializers.DateTimeField(read_only=True)
+    created_at = serializers.DateTimeField(read_only = True)
+    updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(read_only=True)
     article_id = serializers.IntegerField(read_only=True)
     # user = serializers.StringRelatedField(read_only=True, many=False)
@@ -121,20 +121,21 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.content = validated_data.get('content', instance.content)
-        instance.updatedAt= timezone.now()
+        instance.updated_at= timezone.now()
 
         instance.save()
         return instance
 
     class Meta:
         model= Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'createdAt', 'updatedAt']
+        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
+
 
 
 class ArticleLikeSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(write_only = True)
-    article_id = serializers.IntegerField(write_only = True)
-    createdAt = serializers.DateTimeField(read_only=True)
+    user_id = serializers.IntegerField()
+    article_id = serializers.IntegerField()
+    created_at = serializers.DateTimeField(read_only=True)
 
     def post(self, validated_data) :
         article_id = validated_data['article_id']
@@ -155,3 +156,7 @@ class ArticleLikeSerializer(serializers.ModelSerializer):
         )
 
         return liked_article
+    
+    class Meta:
+        model=Article_Like
+        fields = ['id', 'user_id', 'article_id', 'created_at']

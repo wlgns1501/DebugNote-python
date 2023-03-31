@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from django.db import transaction
+from django.db import transaction, connection
 from .serializers import *
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -14,10 +14,12 @@ from drf_yasg import openapi
 from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import CursorPagination
+from django.contrib.postgres.aggregates import JSONBAgg
+
 
 class ArticlePagination(CursorPagination):
     page_size = 10
-    ordering = 'createdAt'
+    ordering = 'created_at'
 
 class ArticleView(APIView):
     serializer_class = ArticleSerializer
@@ -26,10 +28,30 @@ class ArticleView(APIView):
 
     @swagger_auto_schema(tags=['아티클 리스트'])
     def get(self, request) :
-        try:
-            articles = Article.objects.select_related('user').all().order_by('-createdAt')
-        except Article.DoesNotExist : 
-            return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
+        raw_query = """
+            SELECT 
+                ba.id,
+                ba.title ,
+                ba."content" ,
+                ba.created_at,
+                jsonb_build_object(
+                    'id', au.id,
+                    'nickname', au.nickname,
+                    'email', au.email
+                ) as "User"
+            FROM blog_article ba 
+            left join account_user au on ba.user_id = au.id
+            order by ba.created_at desc
+        """
+
+        
+        articles = Article.objects.raw(raw_query)
+
+
+        # try:
+        #     articles = Article.objects.select_related('user').all().order_by('-created_at')
+        # except Article.DoesNotExist : 
+        #     return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
 
         serializer = ArticleSerializer(articles, many=True)
         
@@ -154,7 +176,7 @@ class ArticleDetailView(APIView):
         
 class CommentPagination(CursorPagination):
     page_size = 5
-    ordering = 'createdAt'
+    ordering = 'created_at'
 
 
 class CommentView(APIView):
@@ -167,7 +189,7 @@ class CommentView(APIView):
     def get(self, request, article_id : int):
 
         try : 
-            comments = Comment.objects.filter(article_id=article_id).order_by('-createdAt')
+            comments = Comment.objects.filter(article_id=article_id).order_by('-created_at')
         except Comment.DoesNotExist:
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
 
@@ -261,13 +283,22 @@ class ArticleLikeView(APIView):
     authentication_classes = [JWTAuthentication]
 
 
-    @transaction.Atomic
-    async def post(self, request, article_id : int) :
+    @transaction.atomic
+    @swagger_auto_schema(tags=['아티클 좋아요'])
+    def post(self, request, article_id : int) :
         payload = JWTAuthentication.authenticate(self, request)
         user_id = payload[1]['id']
 
+        try :
+            article = Article.objects.get(id=article_id)
+
+        except Article.DoesNotExist :
+            return Response({'data': '게시물이 존재하지 않습니다.', 'success' : False}, status=status.HTTP_404_NOT_FOUND)
+
+        id_dict = {"article_id" : article_id, "user_id" : user_id}
+
         with transaction.atomic():
-            serializer = await self.serializer_class({article_id, user_id})
+            serializer = self.serializer_class(data=id_dict)
 
 
         if serializer.is_valid():
