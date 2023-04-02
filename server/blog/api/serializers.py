@@ -2,6 +2,10 @@ from django.utils import timezone
 from rest_framework import serializers
 from blog.models import *
 from account.api.serializers import UserSerializer
+from article_like.api.serializers import ArticleLikeSerializer
+from article_comment.api.serializers import *
+from asgiref.sync import sync_to_async
+from blog.api.service import ArticleRepository
 
 class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
@@ -9,9 +13,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(write_only = True)
     created_at = serializers.DateTimeField(read_only=True)
     user = UserSerializer(read_only=True)
-    # user = serializers.StringRelatedField(read_only=True)
-
-    def create(self, validated_data) :
+    article_like = ArticleLikeSerializer(many=True, read_only=True)
+    article_comment = CommentDetailSerializer(many=True, read_only=True)
+    
+    async def create(self, validated_data) :
         title = validated_data['title']
         content = validated_data['content']
         user_id = validated_data['user_id']
@@ -31,17 +36,13 @@ class ArticleSerializer(serializers.ModelSerializer):
                 '유저 Id를 입력하지 않았습니다.'
             )
 
-        article = Article.objects.create(
-            title = validated_data['title'],
-            content = validated_data['content'],
-            user_id = validated_data['user_id']
-        )
+        article = await ArticleRepository.create_article(validated_data)
 
         return article
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user']
+        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user', 'article_like', 'article_comment']
 
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
@@ -50,10 +51,8 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only = True)
     updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
-    # user = serializers.StringRelatedField(read_only=True)
     user = UserSerializer(read_only=True)
-
-    
+    article_like = ArticleLikeSerializer(read_only=True, many=True)
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -61,102 +60,12 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         instance.updated_at= timezone.now()
         instance.save()
         return instance
-        
 
     def delete(self, instance):
         instance.delete()
         instance.save()
 
-
         # return article
     class Meta :
         model = Article
-        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user_id', 'user']
-
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    content = serializers.CharField(max_length=100)
-    created_at = serializers.DateTimeField(read_only = True)
-    updated_at = serializers.DateTimeField(read_only=True)
-    user_id = serializers.IntegerField(write_only=True)
-    article_id = serializers.IntegerField(write_only=True)
-    # user = serializers.StringRelatedField(read_only=True, many=False)
-    user = UserSerializer(read_only=True)
-
-
-    def create(self, validated_data):
-        content = validated_data['content']
-        article_id = validated_data['article_id']
-        user_id = validated_data['user_id']
-
-        if not content :
-            return serializers.ValidationError(
-                '댓글을 입력하지 않았습니다.'
-            )
-
-        comment = Comment.objects.create(
-            content = validated_data['content'],
-            article_id = validated_data['article_id'],
-            user_id = validated_data['user_id']
-        )
-
-        return comment
-
-    class Meta:
-        model= Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
-
-
-class CommentDetailSerializer(serializers.ModelSerializer):
-    content = serializers.CharField(max_length=100)
-    created_at = serializers.DateTimeField(read_only = True)
-    updated_at = serializers.DateTimeField(read_only=True)
-    user_id = serializers.IntegerField(read_only=True)
-    article_id = serializers.IntegerField(read_only=True)
-    # user = serializers.StringRelatedField(read_only=True, many=False)
-    user = UserSerializer(read_only=True)
-
-
-
-    def update(self, instance, validated_data):
-        instance.content = validated_data.get('content', instance.content)
-        instance.updated_at= timezone.now()
-
-        instance.save()
-        return instance
-
-    class Meta:
-        model= Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
-
-
-
-class ArticleLikeSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField()
-    article_id = serializers.IntegerField()
-    created_at = serializers.DateTimeField(read_only=True)
-
-    def post(self, validated_data) :
-        article_id = validated_data['article_id']
-        user_id = validated_data['user_id']
-
-        if not article_id:
-            return serializers.ValidationError(
-                '댓글을 입력하지 않았습니다.'
-            )
-        if not user_id : 
-            return serializers.ValidationError(
-                '댓글을 입력하지 않았습니다.'
-            )
-        
-        liked_article = Article_Like.objects.create(
-            user_id = user_id,
-            article_id = article_id
-        )
-
-        return liked_article
-    
-    class Meta:
-        model=Article_Like
-        fields = ['id', 'user_id', 'article_id', 'created_at']
+        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user_id', 'user', 'article_like']

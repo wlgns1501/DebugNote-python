@@ -8,15 +8,22 @@ from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 from typing import Dict, NewType
 from account.models import User
+from dataclasses import dataclass
 
-# User = get_user_model()
-# Jwt: Dict[] = {
-#     "id" : int,
-#     "email" : str,
-#     "exp" : str
-# }
+@dataclass
+class JWT_TYPE : 
+    id : int
+    email : str
+    exp : str
+
+def decode_jwt(jwt_token : str) -> JWT_TYPE :
+    return jwt.decode(jwt_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+    
+
 
 class JWTAuthentication(authentication.BaseAuthentication)  :
+        
+
     def authenticate(self, request) :
         jwt_token = request.COOKIES.get('access_token')
 
@@ -24,13 +31,15 @@ class JWTAuthentication(authentication.BaseAuthentication)  :
             raise AuthenticationFailed('로그인이 필요한 기능입니다.')
         
         try:
-            payload= jwt.decode(jwt_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+            payload : JWT_TYPE = decode_jwt(jwt_token)
         except jwt.exceptions.InvalidSignatureError:
             raise AuthenticationFailed('Invalid signature')
         except:
             raise ParseError()
 
-        email = payload.get('email')
+
+
+        email = payload['email']
         if email is None:
             raise AuthenticationFailed('User identifier not found in JWT')
 
@@ -38,6 +47,7 @@ class JWTAuthentication(authentication.BaseAuthentication)  :
         if user is None:
             raise AuthenticationFailed('User not found')
         
+        request.user = user
 
-        return user, payload
+        return request
     

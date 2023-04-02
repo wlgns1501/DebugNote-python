@@ -51,15 +51,19 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['email', 'password']
 
 
-    # def __str__(self):
-    #   return self.email
+    # def __dict__(self):
+    #   obj = {
+    #       'email' : self.email,
+    #        'id':   self.id
+    #     }
+    #   return obj
     
-    def getPassword(email):
+    def getPassword(email) -> str:
         user = User.objects.get(email=email)
         return user.password
 
-    def get_user_by_email(email:str):
-        user = User.objects.get(email=email)
+    def get_user_by_email(email:str) :
+        user = User.objects.filter(email=email).values()[0]
         return user
 
     @property

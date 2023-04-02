@@ -45,7 +45,10 @@ INSTALLED_APPS = [
     "account",
     'blog',
     'corsheaders',
-    'django_filters'
+    'django_filters',
+    'article_comment',
+    'article_like',
+    'adrf'
 ]
 
 MIDDLEWARE = [
@@ -56,7 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware'
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "debugnote.urls"
@@ -91,7 +94,9 @@ DATABASES = {
         "PORT": os.getenv('DB_PORT'),
         "PASSWORD": os.getenv('DB_PASSWORD'),
         "USER": os.getenv('DB_USER')
-        
+    },
+    "TEST" : {
+        'NAME' : "test_db"
     }
 }
 
@@ -155,8 +160,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication'
     ],
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
-
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 
 CORS_ALLOWED_ORIGINS = [
