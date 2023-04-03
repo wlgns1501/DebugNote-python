@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 import bcrypt
 
+from account.api.service import User_Service
+
 
 def hashed_password(password : bytes) :
     return bcrypt.hashpw(password, bcrypt.gensalt())
@@ -32,7 +34,7 @@ class SignUpSeiralizer(serializers.ModelSerializer):
         fields = ["id", "email", "nickname", "password"]
 
 
-class   SignInSerializer(serializers.ModelSerializer):
+class SignInSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
     nickname = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=255, write_only=True)
@@ -52,9 +54,14 @@ class   SignInSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'password를 입력하지 않았습니다.'
             )
+        
+        try:
+            user = User_Service.get_user_by_email(email=email)
+        except User.DoesNotExist:
+            user = None
 
         # 저장되어 있는 비밀번호
-        user_password: str = User.getPassword(email=email)
+        user_password: str = user.password
 
         # 입력한 비밀번호
         input_password = password.encode('utf-8')
@@ -74,10 +81,7 @@ class   SignInSerializer(serializers.ModelSerializer):
         # user = User.objects.get(email=email)
         # print(user)
 
-        try:
-            user = User.get_user_by_email(email=email)
-        except User.DoesNotExist:
-            user = None
+      
 
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
@@ -105,8 +109,6 @@ class UserSerializer(serializers.ModelSerializer):
         new_password : bytes = validated_data.get('password').encode('utf-8')
         hashed_new_password = hashed_password(new_password)
         decoded_new_password = decoded_password(hashed_new_password)
-
-        
 
         instance.email = validated_data.get('email', instance.email)
         instance.password = decoded_new_password

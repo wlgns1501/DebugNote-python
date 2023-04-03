@@ -4,7 +4,6 @@ from blog.models import *
 from account.api.serializers import UserSerializer
 from article_like.api.serializers import ArticleLikeSerializer
 from article_comment.api.serializers import *
-from asgiref.sync import sync_to_async
 from blog.api.service import ArticleRepository
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -16,7 +15,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     article_like = ArticleLikeSerializer(many=True, read_only=True)
     article_comment = CommentDetailSerializer(many=True, read_only=True)
     
-    async def create(self, validated_data) :
+    def create(self, validated_data) :
         title = validated_data['title']
         content = validated_data['content']
         user_id = validated_data['user_id']
@@ -36,7 +35,7 @@ class ArticleSerializer(serializers.ModelSerializer):
                 '유저 Id를 입력하지 않았습니다.'
             )
 
-        article = await ArticleRepository.create_article(validated_data)
+        article = ArticleRepository.create_article(validated_data)
 
         return article
 

@@ -30,14 +30,14 @@ class ArticleView(APIView):
     article_repository = ArticleRepository
 
     @swagger_auto_schema(tags=['아티클 리스트'])
-    async def get(self, request) :
+    def get(self, request) :
         try :
-            article_counts = await self.article_repository.get_count()
+            article_counts = self.article_repository.get_count()
         except Article.DoesNotExist : 
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
 
         try:
-            articles = await self.article_repository.get_articles()
+            articles = self.article_repository.get_articles()
         except Article.DoesNotExist : 
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
 
@@ -56,7 +56,7 @@ class ArticleView(APIView):
                 'title' : openapi.Schema(type=openapi.TYPE_STRING, description='제목'),
                 'content' : openapi.Schema(type=openapi.TYPE_STRING, description='내용')
             })))
-    async def post(self, request) :
+    def post(self, request) :
         authentication_classes = [JWTAuthentication]
         JWTAuthentication.authenticate(self, request)
 
@@ -66,7 +66,7 @@ class ArticleView(APIView):
         body['user_id'] = user_id
 
         with transaction.atomic():
-            serializer = await self.serializer_class(data=body)
+            serializer = self.serializer_class(data=body)
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -81,16 +81,16 @@ class ArticleDetailView(APIView):
     serializer_class = ArticleDetailSerializer
     article_repository = ArticleRepository
 
-    async def get_object(self, article_id: int, user_id:int) :
+    def get_object(self, article_id: int, user_id:int) :
         try:
-            return await self.article_repository.get_article_mine(article_id, user_id)
+            return self.article_repository.get_article_mine(article_id, user_id)
         except Article.DoesNotExist:
             return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(tags=['아티클 상세페이지'])
-    async def get(self, request, article_id:int):
+    def get(self, request, article_id:int):
         try:
-            article = await self.article_repository.get_article(article_id)
+            article = self.article_repository.get_article(article_id)
         except Article.DoesNotExist:
             return Response({"success" : False, "data" : None}, status=status.HTTP_404_NOT_FOUND)
         
@@ -108,13 +108,13 @@ class ArticleDetailView(APIView):
                 'content' : openapi.Schema(type=openapi.TYPE_STRING, description='내용')
             }))
     )
-    async def patch(self, request, article_id : int):
+    def patch(self, request, article_id : int):
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
         user_id = user[1]['id']
 
-        article = await self.get_object(article_id, user_id)
+        article = self.get_object(article_id, user_id)
         
         
         body = json.loads(request.body)
@@ -134,13 +134,13 @@ class ArticleDetailView(APIView):
 
     @transaction.atomic
     @swagger_auto_schema(tags=['아티클 삭제하기'])
-    async def delete(self, request, article_id:int) :
+    def delete(self, request, article_id:int) :
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
         user_id = user[1]['id']
 
-        article = await self.get_object(article_id, user_id)
+        article = self.get_object(article_id, user_id)
         
         if not article :
             return Response({"success" : False, "data" : "다른 사람의 글을 삭제할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)

@@ -20,7 +20,6 @@ def decode_jwt(jwt_token : str) -> JWT_TYPE :
     return jwt.decode(jwt_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
     
 
-
 class JWTAuthentication(authentication.BaseAuthentication)  :
         
 

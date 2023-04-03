@@ -9,12 +9,13 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework import permissions, status
 from drf_yasg.utils import swagger_auto_schema
 import bcrypt
-
 from account.authentication import JWTAuthentication
+from account import jwt_middleware
 from .serializers import SignInSerializer, SignUpSeiralizer, UserSerializer
 from ..models import User
 from django.db import transaction
-
+from django.utils.decorators import method_decorator
+from account.jwt_middleware import JwtMiddleWare
 
 class SignUpView(APIView):
     serializer_class = SignUpSeiralizer
@@ -41,14 +42,14 @@ class SignUpView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-
-
 class SignInView(APIView) :
     serializer_class = SignInSerializer
     queryset = User.objects.all()
+    middleware_classes = []
 
     @swagger_auto_schema(tags=['로그인'], request_body = SignInSerializer)
     def post(self, request) :
+        
         body = json.loads(request.body)
     
         serializer = self.serializer_class(data=body)
@@ -63,6 +64,7 @@ class SignInView(APIView) :
 
 class SignOutView(APIView):
       
+      @method_decorator(JwtMiddleWare)
       @swagger_auto_schema(tags=['로그아웃'])
       def post(self, request) :
 
@@ -82,6 +84,7 @@ class UserDetailView(APIView):
             return None
 
     @transaction.atomic
+    @method_decorator(JwtMiddleWare)
     @swagger_auto_schema(tags=['개인 정보 수정'], request_body=UserSerializer)
     def patch(self, request, user_id:int):
         payload = JWTAuthentication.authenticate(self, request)
@@ -112,6 +115,7 @@ class UserDetailView(APIView):
 
 
     @transaction.atomic
+    @method_decorator(JwtMiddleWare)
     @swagger_auto_schema(tags=['탈퇴'])
     def delete(self, request, user_id: int) :
         payload = JWTAuthentication.authenticate(self, request)
