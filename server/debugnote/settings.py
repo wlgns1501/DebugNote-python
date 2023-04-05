@@ -48,11 +48,12 @@ INSTALLED_APPS = [
     'django_filters',
     'article_comment',
     'article_like',
-    'adrf'
+    'adrf',
+    'article_reply'
 ]
 
 MIDDLEWARE = [
-    'account.jwt_middleware.JwtMiddleWare',
+    # 'account.jwt_middleware.JwtMiddleWare',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",

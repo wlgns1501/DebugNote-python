@@ -87,8 +87,8 @@ class UserDetailView(APIView):
     @method_decorator(JwtMiddleWare)
     @swagger_auto_schema(tags=['개인 정보 수정'], request_body=UserSerializer)
     def patch(self, request, user_id:int):
-        payload = JWTAuthentication.authenticate(self, request)
-        payload_user_id = payload[1]['id']
+        user = JWTAuthentication.authenticate(self, request)
+        payload_user_id = user.id
 
         if payload_user_id != user_id :
             return Response({"success" : False, "data" : None, "message" : '다른 유저의 정보를 수정 할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -118,8 +118,8 @@ class UserDetailView(APIView):
     @method_decorator(JwtMiddleWare)
     @swagger_auto_schema(tags=['탈퇴'])
     def delete(self, request, user_id: int) :
-        payload = JWTAuthentication.authenticate(self, request)
-        payload_user_id = payload[1]['id']
+        user = JWTAuthentication.authenticate(self, request)
+        payload_user_id = user.id
 
         if payload_user_id != user_id :
             return Response({"success" : False, "data" : None, "message" : '다른 유저를 삭제할 수 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)

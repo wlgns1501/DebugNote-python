@@ -26,8 +26,8 @@ class ArticleLikeView(APIView):
     @transaction.atomic
     @swagger_auto_schema(tags=['아티클 좋아요'])
     def post(self, request, article_id : int) :
-        payload = JWTAuthentication.authenticate(self, request)
-        user_id : int = payload[1]['id']
+        user = JWTAuthentication.authenticate(self, request)
+        user_id : int = user.id
 
         try :
             article = Article.objects.get(id=article_id)

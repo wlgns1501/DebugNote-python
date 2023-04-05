@@ -58,14 +58,6 @@ class User(AbstractBaseUser):
     #     }
     #   return obj
     
-    def getPassword(email) -> str:
-        user = User.objects.get(email=email)
-        return user.password
-
-    def get_user_by_email(email:str) :
-        user = User.objects.filter(email=email).values()[0]
-        return user
-
     @property
     def token(self):
       return self._generate_jwt_token()

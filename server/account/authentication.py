@@ -9,6 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed, ParseError
 from typing import Dict, NewType
 from account.models import User
 from dataclasses import dataclass
+from account.api.service import User_Service
 
 @dataclass
 class JWT_TYPE : 
@@ -42,11 +43,10 @@ class JWTAuthentication(authentication.BaseAuthentication)  :
         if email is None:
             raise AuthenticationFailed('User identifier not found in JWT')
 
-        user = User.get_user_by_email(email)
+        user = User_Service.get_user_by_email(email)
         if user is None:
             raise AuthenticationFailed('User not found')
         
-        request.user = user
 
-        return request
+        return user
     

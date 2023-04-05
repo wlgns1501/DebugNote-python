@@ -28,7 +28,7 @@ class CommentView(APIView):
 
 
     @swagger_auto_schema(tags=['댓글 리스트'])
-    def get(self, request, article_id : int):
+    def get(self, request):
 
         try : 
             comments = Article_Comment.objects.filter(article_id=article_id).order_by('-created_at')
@@ -48,16 +48,17 @@ class CommentView(APIView):
             'content' : openapi.Schema(type=openapi.TYPE_STRING, description='내용')
         }))
     )
-    def post(self, request, article_id):
+    def post(self, request, article_id: int):
         authentication_classes = [JWTAuthentication]
+        
 
-        payload = JWTAuthentication.authenticate(self, request)
-        user_id = payload[1]['id']
+        user = JWTAuthentication.authenticate(self, request)
+        
+        user_id = user.id
 
         body = json.loads(request.body)
         body['article_id'] = article_id
         body['user_id'] = user_id
-
         serializer = self.serializer_class(data=body)
 
         if serializer.is_valid() :
@@ -91,7 +92,7 @@ class CommentDetailView(APIView):
 
     @transaction.atomic
     @method_decorator(name = '댓글 수정하기', decorator=swagger_auto_schema(
-        tags=['댓글 달기'], 
+        tags=['댓글 수정하기'], 
         request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT, 
         properties={
@@ -101,8 +102,8 @@ class CommentDetailView(APIView):
     def patch(self, request, comment_id:int, article_id:int) :
         authentication_classes = [JWTAuthentication]
 
-        payload = JWTAuthentication.authenticate(self, request)
-        user_id = payload[1]['id']
+        user = JWTAuthentication.authenticate(self, request)
+        user_id = user.id
 
         comment = self.get_object(comment_id, user_id)
 

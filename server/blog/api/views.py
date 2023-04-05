@@ -58,9 +58,9 @@ class ArticleView(APIView):
             })))
     def post(self, request) :
         authentication_classes = [JWTAuthentication]
-        JWTAuthentication.authenticate(self, request)
-
-        user_id = request.user['id']
+        user = JWTAuthentication.authenticate(self, request)
+        
+        user_id = user.id
         
         body = json.loads(request.body)
         body['user_id'] = user_id

@@ -21,6 +21,8 @@ class CommentSerializer(serializers.ModelSerializer):
         article_id = validated_data['article_id']
         user_id = validated_data['user_id']
 
+        print(validated_data)
+
         if not content :
             return serializers.ValidationError(
                 '댓글을 입력하지 않았습니다.'
@@ -32,6 +34,7 @@ class CommentSerializer(serializers.ModelSerializer):
             user_id = validated_data['user_id']
         )
 
+        
         return comment
 
     class Meta:
