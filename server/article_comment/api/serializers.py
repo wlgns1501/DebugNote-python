@@ -3,7 +3,7 @@ from rest_framework import serializers
 from blog.models import *
 from account.api.serializers import UserSerializer
 from article_comment.models import Article_Comment
-
+from article_comment.api.service import Article_Comment_Service
 # from blog.api.serializers import ArticleDetailSerializer
 
 
@@ -20,22 +20,26 @@ class CommentSerializer(serializers.ModelSerializer):
         content = validated_data['content']
         article_id = validated_data['article_id']
         user_id = validated_data['user_id']
-
-        print(validated_data)
-
+        
         if not content :
             return serializers.ValidationError(
                 '댓글을 입력하지 않았습니다.'
             )
-
-        comment = Article_Comment.objects.create(
-            content = validated_data['content'],
-            article_id = validated_data['article_id'],
-            user_id = validated_data['user_id']
-        )
-
         
+        if not article_id : 
+            return serializers.ValidationError(
+                '아티클 id를 입력하지 않았습니다.'
+            )
+        
+        if not user_id : 
+            return serializers.ValidationError(
+                '유저 Id를 입력하지 않았습니다.'
+            )
+
+        comment = Article_Comment_Service.create(validated_data)
+
         return comment
+        
 
     class Meta:
         model= Article_Comment

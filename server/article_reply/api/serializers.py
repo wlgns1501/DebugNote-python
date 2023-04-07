@@ -31,9 +31,6 @@ class ReplySerializer(serializers.ModelSerializer):
 
         return reply
 
-
-
-
     class Meta:
         model = Reply
         fields = ['id', 'content', 'created_at', 'updated_at', 'user_id', 'comment_id', 'user']

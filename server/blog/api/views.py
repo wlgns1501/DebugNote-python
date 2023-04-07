@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render
 from django.db import transaction, connection
-from blog.api.service import ArticleRepository
+from blog.api.service import Article_Service
 from .serializers import *
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -27,7 +27,7 @@ class ArticleView(APIView):
     serializer_class = ArticleSerializer
     queryset = Article.objects.all()
     pagination_class = ArticlePagination
-    article_repository = ArticleRepository
+    article_repository = Article_Service
 
     @swagger_auto_schema(tags=['아티클 리스트'])
     def get(self, request) :
@@ -70,7 +70,6 @@ class ArticleView(APIView):
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-
             return Response({"success" : True, 'data' : serializer.data}, status=status.HTTP_201_CREATED)
     
         else :
@@ -79,7 +78,7 @@ class ArticleView(APIView):
 
 class ArticleDetailView(APIView):
     serializer_class = ArticleDetailSerializer
-    article_repository = ArticleRepository
+    article_repository = Article_Service
 
     def get_object(self, article_id: int, user_id:int) :
         try:

@@ -4,7 +4,8 @@ from blog.models import *
 from account.api.serializers import UserSerializer
 from article_like.api.serializers import ArticleLikeSerializer
 from article_comment.api.serializers import *
-from blog.api.service import ArticleRepository
+from blog.api.service import Article_Service
+
 
 class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
@@ -13,7 +14,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
     user = UserSerializer(read_only=True)
     article_like = ArticleLikeSerializer(many=True, read_only=True)
-    article_comment = CommentDetailSerializer(many=True, read_only=True)
+    article_comment = CommentSerializer(many=True, read_only=True)
     
     def create(self, validated_data) :
         title = validated_data['title']
@@ -35,7 +36,7 @@ class ArticleSerializer(serializers.ModelSerializer):
                 '유저 Id를 입력하지 않았습니다.'
             )
 
-        article = ArticleRepository.create_article(validated_data)
+        article = Article_Service.create_article(validated_data)
 
         return article
 
@@ -52,6 +53,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(write_only=True)
     user = UserSerializer(read_only=True)
     article_like = ArticleLikeSerializer(read_only=True, many=True)
+    article_comment = CommentSerializer(many=True, read_only=True)
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)

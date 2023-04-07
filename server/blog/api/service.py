@@ -7,7 +7,7 @@ class DataDto:
     content : str
     user_id : int
 
-class ArticleRepository() :
+class Article_Service() :
 
     def get_count():
         return Article.objects.count()

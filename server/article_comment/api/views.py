@@ -16,6 +16,7 @@ from rest_framework.pagination import CursorPagination
 from django.contrib.postgres.aggregates import JSONBAgg
 from django.db.models.functions import Coalesce
         
+
 class CommentPagination(CursorPagination):
     page_size = 5
     ordering = 'created_at'
@@ -28,7 +29,7 @@ class CommentView(APIView):
 
 
     @swagger_auto_schema(tags=['댓글 리스트'])
-    def get(self, request):
+    def get(self, request, article_id:int):
 
         try : 
             comments = Article_Comment.objects.filter(article_id=article_id).order_by('-created_at')
@@ -50,8 +51,6 @@ class CommentView(APIView):
     )
     def post(self, request, article_id: int):
         authentication_classes = [JWTAuthentication]
-        
-
         user = JWTAuthentication.authenticate(self, request)
         
         user_id = user.id
@@ -59,13 +58,19 @@ class CommentView(APIView):
         body = json.loads(request.body)
         body['article_id'] = article_id
         body['user_id'] = user_id
-        serializer = self.serializer_class(data=body)
+        
 
+        
+        with transaction.atomic() :
+            serializer = self.serializer_class(data=body)
+            
+            
         if serializer.is_valid() :
             serializer.save()
             return Response({'data': serializer.data, 'success' : True}, status=status.HTTP_201_CREATED)
         
         else : 
+            print(serializer.error_messages)
             return Response({"success" : False, 'data' : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
