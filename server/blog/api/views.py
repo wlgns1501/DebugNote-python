@@ -137,7 +137,7 @@ class ArticleDetailView(APIView):
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
-        user_id = user[1]['id']
+        user_id = user.id
 
         article = self.get_object(article_id, user_id)
         

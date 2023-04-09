@@ -58,12 +58,9 @@ class CommentView(APIView):
         body = json.loads(request.body)
         body['article_id'] = article_id
         body['user_id'] = user_id
-        
 
-        
         with transaction.atomic() :
             serializer = self.serializer_class(data=body)
-            
             
         if serializer.is_valid() :
             serializer.save()
@@ -124,3 +121,18 @@ class CommentDetailView(APIView):
         
         else :
             return Response({"success" : False, 'data' : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @swagger_auto_schema(tags=['댓글 삭제'])
+    def delete(self, request, comment_id : int, article_id : int):
+        authentication_classes = [JWTAuthentication]
+
+        user = JWTAuthentication.authenticate(self, request)
+        user_id = user.id
+
+        comment = self.get_object(comment_id, user_id)
+
+        with transaction.atomic():
+            comment.delete()
+            return Response({"success" : True}, status=status.HTTP_200_OK)
+

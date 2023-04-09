@@ -1,3 +1,4 @@
+from django.utils import timezone
 from article_reply.models import Reply
 from rest_framework import serializers
 from account.api.serializers import UserSerializer
@@ -10,11 +11,8 @@ class ReplySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
 
-
-
     def create(self, validated_data) :
         content = validated_data['content']
-        article_id = validated_data['article_id']
         user_id = validated_data['user_id']
         comment_id = validated_data['comment_id']
 
@@ -33,4 +31,31 @@ class ReplySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reply
-        fields = ['id', 'content', 'created_at', 'updated_at', 'user_id', 'comment_id', 'user']
+        fields = ['id', 'content', 'created_at', 'user_id', 'comment_id', 'user']
+
+
+class ReplyDetailSerializer(serializers.ModelSerializer) :
+    content = serializers.CharField(max_length = 100)
+    user_id = serializers.IntegerField(read_only=True)
+    comment_id = serializers.IntegerField(read_only = True)
+    user = UserSerializer(read_only=True)
+    created_at = serializers.DateTimeField(read_only= True)
+    updated_at =  serializers.DateTimeField(read_only=True)
+
+    def update(self, instance, validated_data) :
+        if not validated_data['content']:
+            return serializers.ValidationError(
+                '내용을 입력하지 않았습니다.'
+            )
+        
+        instance.content = validated_data.get('content', instance.content)
+        instance.updated_at = timezone.now()
+
+
+        instance.save()
+        return instance
+
+
+    class Meta :
+        model = Reply
+        fields = ['id', 'content', 'user_id', 'comment_id' ,'user', 'created_at', 'updated_at']

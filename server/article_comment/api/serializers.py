@@ -12,7 +12,7 @@ class CommentSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only = True)
     updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
-    article_id = serializers.IntegerField(write_only=True)
+    article_id = serializers.IntegerField()
     user = UserSerializer(read_only=True)
 
 
@@ -43,7 +43,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model= Article_Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at', 'article']
+        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
 
 
 class CommentDetailSerializer(serializers.ModelSerializer):

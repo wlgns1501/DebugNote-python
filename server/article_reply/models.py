@@ -11,7 +11,7 @@ class Reply(models.Model) :
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
     comment = models.ForeignKey(Article_Comment, on_delete=models.CASCADE, related_name='comment')
     created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_created=True)
+    updated_at = models.DateTimeField(auto_created=True, null=True)
 
 
     class Meta:
