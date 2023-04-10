@@ -47,7 +47,7 @@ class ArticleView(APIView):
 
 
     @transaction.atomic
-    @method_decorator( decorator=swagger_auto_schema(
+    @method_decorator(decorator=swagger_auto_schema(
             tags=['아티클 생성'], 
             request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT, 
@@ -58,8 +58,7 @@ class ArticleView(APIView):
     def post(self, request) :
         authentication_classes = [JWTAuthentication]
         user = JWTAuthentication.authenticate(self, request)
-        
-        user_id = user.id
+        user_id = user[0].id
         
         body = json.loads(request.body)
         body['user_id'] = user_id
@@ -136,7 +135,7 @@ class ArticleDetailView(APIView):
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
-        user_id = user.id
+        user_id = user[0].id
 
         article = self.get_object(article_id, user_id)
         

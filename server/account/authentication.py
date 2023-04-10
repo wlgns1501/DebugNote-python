@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 from dotenv import load_dotenv
 import os
 import jwt
@@ -22,8 +23,6 @@ def decode_jwt(jwt_token : str) -> JWT_TYPE :
     
 
 class JWTAuthentication(authentication.BaseAuthentication)  :
-        
-
     def authenticate(self, request) :
         jwt_token = request.COOKIES.get('access_token')
 
@@ -37,8 +36,6 @@ class JWTAuthentication(authentication.BaseAuthentication)  :
         except:
             raise ParseError()
 
-
-
         email = payload['email']
         if email is None:
             raise AuthenticationFailed('User identifier not found in JWT')
@@ -46,7 +43,5 @@ class JWTAuthentication(authentication.BaseAuthentication)  :
         user = User_Service.get_user_by_email(email)
         if user is None:
             raise AuthenticationFailed('User not found')
-        
-
-        return user
     
+        return user, payload

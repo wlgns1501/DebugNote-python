@@ -3,7 +3,7 @@ from .api.views import *
 
 
 urlpatterns = [
-    path('<int:user_id>', UserDetailView.as_view(), name='user'),
+    path('', UserDetailView.as_view(), name='user'),
     path("signup", SignUpView.as_view(), name="signup"),
     path("signin", SignInView.as_view(), name="signin"),
     path("signout", SignOutView.as_view(), name="signout")

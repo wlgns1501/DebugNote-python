@@ -43,7 +43,7 @@ class ReplyView(APIView) :
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
-        user_id = user.id
+        user_id = user[0].id
 
         body = json.loads(request.body)
         body['article_id'] = article_id
@@ -94,7 +94,7 @@ class ReplyDetailView(APIView) :
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
-        user_id = user.id
+        user_id = user[0].id
 
         reply = self.get_one(comment_id, reply_id, user_id)
 
@@ -116,7 +116,7 @@ class ReplyDetailView(APIView) :
         authentication_classes = [JWTAuthentication]
 
         user = JWTAuthentication.authenticate(self, request)
-        user_id = user.id
+        user_id = user[0].id
 
         reply = self.get_one(comment_id, reply_id, user_id)
 
