@@ -46,7 +46,6 @@ class ArticleView(APIView):
         return Response({'count' : article_counts, 'articles' :serializer.data , 'success' : True}, status=status.HTTP_200_OK)
 
 
-    
     @transaction.atomic
     @method_decorator( decorator=swagger_auto_schema(
             tags=['아티클 생성'], 
