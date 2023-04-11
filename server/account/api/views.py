@@ -10,13 +10,11 @@ from rest_framework import permissions, status
 from drf_yasg.utils import swagger_auto_schema
 import bcrypt
 from account.authentication import JWTAuthentication
-from account import jwt_middleware
 from .serializers import SignInSerializer, SignUpSeiralizer, UserSerializer
 from ..models import User
 from django.db import transaction
 from drf_yasg import openapi
 from django.utils.decorators import method_decorator
-from account.jwt_middleware import JwtMiddleWare
 
 class SignUpView(APIView):
     serializer_class = SignUpSeiralizer
@@ -24,29 +22,26 @@ class SignUpView(APIView):
 
     @swagger_auto_schema(tags=['유저 생성'], request_body = SignUpSeiralizer)
     def post(self, request):
-        try :
-            body = json.loads(request.body)
+        body = json.loads(request.body)
+        
 
-            with transaction.atomic() :
-                serializer = self.serializer_class(data=body)
-            if serializer.is_valid():
-                
-                serializer.save()
-                
-                return Response(
-                    {"status": "success", "user" : serializer.data},
-                    status=status.HTTP_201_CREATED,
-                )
-            else :
-                return Response(
-                    {"status": "fail", "message": serializer.errors},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        except Exception:
+        with transaction.atomic() :
+            serializer = self.serializer_class(data=body)
+        if serializer.is_valid(raise_exception=True):
+            
+            serializer.save()
+            
             return Response(
-                    {"status": "fail", "message": serializer.errors},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                ) 
+                {"user" : serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+        else :
+            return Response(
+                { "message": serializer.errors },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+   
+                
 class SignInView(APIView) :
     serializer_class = SignInSerializer
     queryset = User.objects.all()
@@ -57,8 +52,8 @@ class SignInView(APIView) :
         body = json.loads(request.body)
     
         serializer = self.serializer_class(data=body)
-
-        if serializer.is_valid() :
+        
+        if serializer.is_valid(raise_exception=True) :
             response = JsonResponse({'data' : serializer.data, 'status' : status.HTTP_200_OK })
             response.set_cookie("access_token", serializer.data['token'], expires= datetime.now() + timedelta(days=2) )
             return response
@@ -83,10 +78,8 @@ class UserDetailView(APIView):
     queryset = User.objects.all()
 
     def get_object(self, user_id:int) :
-        try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return None
+        return User.objects.get(id=user_id)
+      
 
     @transaction.atomic
     @method_decorator(decorator=swagger_auto_schema(
@@ -105,13 +98,10 @@ class UserDetailView(APIView):
         body = json.loads(request.body)
         user = self.get_object(user_id)
 
-        if not user :
-            return Response({"success" : False, "data" : None}, status=status.HTTP_404_NOT_FOUND)
-
         with transaction.atomic():
             serializer = self.serailizer_class(user, data=body)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             
             response = JsonResponse({'data' : serializer.data, 'status' : status.HTTP_200_OK })
