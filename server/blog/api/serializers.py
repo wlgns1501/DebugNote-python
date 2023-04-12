@@ -59,8 +59,13 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     article_comment = CommentSerializer(many=True, read_only=True)
 
     def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.content = validated_data.get('content', instance.content)
+
+        if instance.title != validated_data['title'] :
+            instance.title = validated_data['title']
+
+        if instance.content != validated_data['content'] :
+            instance.content = validated_data['content']
+
         instance.updated_at= timezone.now()
         instance.save()
         return instance
@@ -72,4 +77,4 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         # return article
     class Meta :
         model = Article
-        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user_id', 'user', 'article_like']
+        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user_id', 'user', 'article_like', 'article_comment']

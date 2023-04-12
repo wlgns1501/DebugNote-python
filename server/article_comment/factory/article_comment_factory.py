@@ -1,15 +1,16 @@
 import factory
 from faker import Faker
-from blog.models import Article
+from article_comment.models import Article_Comment
 from account.factory.user_factory import UserFactory
+from blog.factory.article_factory import ArticleFactory
 
 
-class ArticleFactory(factory.django.DjangoModelFactory):
+class ArticleCommentFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Article
+        model = Article_Comment
     
-    title = factory.Faker('sentence')
     content = factory.Faker('paragraph')
     user = factory.SubFactory(UserFactory)
+    article = factory.SubFactory(ArticleFactory)
     created_at = factory.Faker('date_time')
     updated_at = factory.Faker('date_time')

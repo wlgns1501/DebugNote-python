@@ -82,7 +82,7 @@ class ArticleDetailView(APIView):
         try:
             return self.article_repository.get_article_mine(article_id, user_id)
         except Article.DoesNotExist:
-            return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return None
 
     @swagger_auto_schema(tags=['아티클 상세페이지'])
     def get(self, request, article_id:int):
@@ -96,8 +96,8 @@ class ArticleDetailView(APIView):
     
 
     @transaction.atomic
-    @method_decorator(name = '아티클 생성', decorator=swagger_auto_schema(
-            tags=['아티클 생성'], 
+    @method_decorator(name = '아티클 수정', decorator=swagger_auto_schema(
+            tags=['아티클 수정'], 
             request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT, 
             properties={
@@ -113,7 +113,9 @@ class ArticleDetailView(APIView):
 
         article = self.get_object(article_id, user_id)
         
-        
+        if article is None :
+            return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         body = json.loads(request.body)
 
         with transaction.atomic():
