@@ -103,9 +103,7 @@ class UserDetailView(APIView):
 
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            
             response = JsonResponse({'data' : serializer.data, 'status' : status.HTTP_200_OK })
-            print(serializer.data)
             response.set_cookie("access_token", serializer.data['token'], expires= datetime.now() + timedelta(days=2) )
             return response
 
@@ -122,11 +120,14 @@ class UserDetailView(APIView):
         user = self.get_object(user_id)
 
         if not user :
-            return Response({"success" : False, "data" : None, 'message' : "해당 유저가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message' : "해당 유저가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         try :
             with transaction.atomic():
                 user.delete()
-                return Response({"success" : True}, status=status.HTTP_200_OK)
+                
+                response = JsonResponse({"success" : True}, status=status.HTTP_200_OK)
+                response.delete_cookie('access_token')
+                return response
         except :
             return Response({"success" : False}, status=status.HTTP_400_BAD_REQUEST)    

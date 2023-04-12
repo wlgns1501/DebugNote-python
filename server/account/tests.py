@@ -1,5 +1,7 @@
 import json
+import os
 import bcrypt
+import jwt
 from rest_framework.test import APITestCase, APIClient, APIRequestFactory
 from rest_framework.reverse import reverse
 from django.utils import timezone
@@ -8,7 +10,14 @@ from rest_framework import status
 from account.factory.user_factory import UserFactory
 from account.api.views import SignUpView
 from rest_framework import serializers
+from dataclasses import dataclass
 
+
+@dataclass
+class JWT_TYPE : 
+    id : int
+    email : str
+    exp : str
 
 def hashed_password(password : bytes) :
     return bcrypt.hashpw(password, bcrypt.gensalt())
@@ -16,6 +25,8 @@ def hashed_password(password : bytes) :
 def decoded_password(hashed_password : bytes) :
     return hashed_password.decode('utf-8')
 
+def decode_jwt(jwt_token : str) -> JWT_TYPE :
+    return jwt.decode(jwt_token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
 
 class SignUpTestAPIViewTestCase(APITestCase):
     def setUp(self):
@@ -176,7 +187,7 @@ class SignInTestAPIViewTestCase(APITestCase):
         response = self.client.post(self.url, data=data, format='json')
         res = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsNotNone(res['data']['token'])
+        self.assertIsNotNone(response.cookies['access_token'].value)
 
 
 class SignOutTestAPIViewTestCase(APITestCase):
@@ -276,7 +287,6 @@ class UpateUserInfoAPIViewTestCase(APITestCase):
 
         response = self.client.patch(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
         self.assertEqual(response.data[0], '중복된 이메일 입니다.', '이메일 중복 테스트🚀')
 
     def test_update_user_info_with_duplicated_nickname(self):
@@ -292,4 +302,48 @@ class UpateUserInfoAPIViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data[0], '중복된 닉네임 입니다.', '닉네임 중복 테스트🚀')
       
-    # def test_update_user_info(self):
+    def test_update_user_info(self):
+        data = {
+            'email' : 'wlgns1501@gmail.com',
+            'password' : 'gkstlsyjh116!',
+            'nickname' : 'jihun'
+        }
+
+        response = self.client.patch(self.url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        user = User.objects.get(email=data['email'])
+        self.assertEqual(user.email, data['email'])
+        self.assertEqual(user.nickname, data['nickname'])
+
+        access_token = response.cookies['access_token'].value
+
+        payload = decode_jwt(access_token)
+
+        self.assertEqual(user.id, payload['id'])
+        self.assertEqual(user.email, payload['email'])
+
+class DeleteUserAPIViewTestCase(APITestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.url = reverse('user')
+        self.user = UserFactory.create(password='testtest')
+        self.response = self.client.post('/auth/signin', {'email' :self.user.email, 'password' :'testtest'}, format='json')
+
+    # def test_find_user(self) :
+    #     payload = self.response.cookies['access_token'].value
+    #     user_id = payload[0].id
+
+    #     user = User.objects.get(id=user_id)
+
+
+
+    def test_delete_user(self):
+        response = self.client.delete(self.url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        access_token = response.cookies['access_token'].value
+
+        self.assertEqual(access_token, '')
+
+

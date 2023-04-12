@@ -1,10 +1,11 @@
 from django.utils import timezone
 from rest_framework import serializers
 from blog.models import *
-from account.api.serializers import UserSerializer
+# from account.api.serializers import UserSerializer
 from article_like.api.serializers import ArticleLikeSerializer
 from article_comment.api.serializers import *
 from blog.api.service import Article_Service
+from account.api.serializers import UserDtoSerialzer
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -12,7 +13,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=500)
     user_id = serializers.IntegerField(write_only = True)
     created_at = serializers.DateTimeField(read_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserDtoSerialzer(read_only=True)
     # article_like = ArticleLikeSerializer(many=True, read_only=True)
     # article_comment = CommentSerializer(many=True, read_only=True)
     likes = serializers.IntegerField(read_only=True)
@@ -53,7 +54,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only = True)
     updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserDtoSerialzer(read_only=True)
     article_like = ArticleLikeSerializer(read_only=True, many=True)
     article_comment = CommentSerializer(many=True, read_only=True)
 

@@ -105,11 +105,11 @@ class UserSerializer(serializers.ModelSerializer):
         if instance.email != validated_data['email'] :
             instance.email = validated_data['email']
         
-        if not bcrypt.checkpw(validated_data['password'].encode('utf-8'), instance.password.encode('utf-8') ):
+        if not bcrypt.checkpw(validated_data['password'].encode('utf-8'), instance.password.encode('utf-8')):
             instance.password = validated_data['password']
 
         if instance.nickname != validated_data['nickname'] :
-            instance.password = validated_data['nickname']
+            instance.nickname = validated_data['nickname']
 
         try :
             instance.save()
@@ -122,4 +122,15 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     class Meta:
         model = User
-        fields = ['id', 'email', 'password' ,'nickname', 'token']
+        fields = ['id', 'email', 'password','token' ,'nickname']
+
+
+class UserDtoSerialzer(serializers.ModelSerializer) :
+    email = serializers.EmailField(max_length = 100)
+    nickname = serializers.CharField(max_length = 100)
+
+
+    class Meta:
+        model = User
+        fields = ['id', 'email','nickname']
+
