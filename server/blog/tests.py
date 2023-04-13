@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase, APIRequestFactory
 from blog.factory.article_factory import ArticleFactory
 from rest_framework import status
 from account.factory.user_factory import UserFactory
+from blog.models import Article
 
 
 class GetArticleListTestAPIViewTestCase(APITestCase):
@@ -134,3 +135,48 @@ class PatchArticleTestAPIViewTestCase(APITestCase):
 
         response = self.client.patch(self.url, data=data, format='json')
         
+
+        json_data = response.json()
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json_data['data']['title'], data['title'])
+        self.assertEqual(json_data['data']['content'], data['content'])
+        self.assertEqual(json_data['data']['user']['id'], self.user.id)
+
+
+class DeleteArticleTestAPIViewTestCase(APITestCase):
+    def setUp(self) :
+        self.url = reverse('articleDetail', args=[21])
+        self.user_factory= UserFactory
+        self.user = UserFactory.create(password='testtest')
+        self.aritlce_factory = ArticleFactory
+        self.article = ArticleFactory.create(id = 21, user_id = self.user.id)
+
+    def test_check_article_mine(self):
+        user = self.user_factory.create(password='aaaa')
+        login_response = self.client.post('/auth/signin', {'email' : user.email, 'password' :'aaaa'}, format='json')
+
+        data = {
+            'title' : 'title title2',
+            'content' : 'content 2222'
+        }
+
+        response = self.client.patch(self.url, data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['data'], '다른 사람의 글을 수정할 수 없습니다.')
+    
+    def test_delete_article(self):
+        self.login_response = self.client.post('/auth/signin', {'email' :self.user.email, 'password' :'testtest'}, format='json')
+
+        response = self.client.delete(self.url)
+
+        json_data = response.json()
+
+        with self.assertRaises(Article.DoesNotExist):
+           Article.objects.get(id=21)
+
+        self.assertEqual(json_data['success'], True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+

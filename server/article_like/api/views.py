@@ -44,5 +44,4 @@ class ArticleLikeView(APIView):
             return Response({"success" : False, "data" : error }, status=status.HTTP_400_BAD_REQUEST)
         
 
-        print(data)
-        return Response({"success" : True, "data" : {"is_liked" : data[0], "article_id" : data[1]} }, status=status.HTTP_200_OK)
+        return Response({"success" : True, "data" : {"is_liked" : data[0], "liked_article_id" : data[1]} }, status=status.HTTP_200_OK)

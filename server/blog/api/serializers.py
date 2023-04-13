@@ -53,7 +53,6 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=500)
     created_at = serializers.DateTimeField(read_only = True)
     updated_at = serializers.DateTimeField(read_only=True)
-    user_id = serializers.IntegerField(write_only=True)
     user = UserDtoSerialzer(read_only=True)
     article_like = ArticleLikeSerializer(read_only=True, many=True)
     article_comment = CommentSerializer(many=True, read_only=True)
@@ -77,4 +76,4 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         # return article
     class Meta :
         model = Article
-        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user_id', 'user', 'article_like', 'article_comment']
+        fields = ['id', 'title', 'content', 'created_at' , 'updated_at', 'user', 'article_like', 'article_comment']
