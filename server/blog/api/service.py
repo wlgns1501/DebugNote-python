@@ -13,6 +13,8 @@ class Article_Service() :
         return Article.objects.count()
     
     def get_articles() :
+        # return Article.objects.all().select_related('user').prefetch_related('article_comment').prefetch_related('aritcle_like')
+
         return Article.objects.raw('''
             with get_articles as (
             	select 

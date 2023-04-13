@@ -27,6 +27,7 @@ class LikeAritlceTestAPIViewTestCase(APITestCase):
         response = self.client.post(self.url)
 
         json_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_data['success'], True)
         self.assertEqual(json_data['data']['is_liked'], True)
         self.assertEqual(json_data['data']['liked_article_id'], 1)
@@ -34,6 +35,7 @@ class LikeAritlceTestAPIViewTestCase(APITestCase):
         response = self.client.post(self.url)
 
         json_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_data['success'], True)
         self.assertEqual(json_data['data']['is_liked'], False)
         self.assertEqual(json_data['data']['liked_article_id'], 0)

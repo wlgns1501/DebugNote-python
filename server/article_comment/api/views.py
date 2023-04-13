@@ -62,7 +62,7 @@ class CommentView(APIView):
         with transaction.atomic() :
             serializer = self.serializer_class(data=body)
             
-        if serializer.is_valid() :
+        if serializer.is_valid(raise_exception=True) :
             serializer.save()
             return Response({'data': serializer.data, 'success' : True}, status=status.HTTP_201_CREATED)
         
@@ -80,7 +80,7 @@ class CommentDetailView(APIView):
         try :
             return Article_Comment.objects.get(id = comment_id, user_id = user_id)
         except Article_Comment.DoesNotExist:
-            return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return None
 
     @swagger_auto_schema(tags=['댓글 상세페이지'])
     def get(self, request, comment_id : int, article_id:int) :
@@ -109,12 +109,17 @@ class CommentDetailView(APIView):
 
         comment = self.get_object(comment_id, user_id)
 
+        if comment is None:
+            return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         body = json.loads(request.body)
+        body['user_id'] = user_id
+        body['article_id'] = article_id
 
         with transaction.atomic() :
             serializer = self.serializer_class(comment, data=body)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
 
             return Response({"success" : True, "data" : serializer.data}, status=status.HTTP_200_OK)
@@ -131,6 +136,9 @@ class CommentDetailView(APIView):
         user_id = user[0].id
 
         comment = self.get_object(comment_id, user_id)
+
+        if comment is None:
+            return Response({"success" : False, "data" : "다른 사람의 글을 삭제할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
             comment.delete()

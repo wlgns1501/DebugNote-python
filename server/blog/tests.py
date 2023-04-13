@@ -47,7 +47,7 @@ class CreateArticleTestAPIViewTestCase(APITestCase):
     def test_create_article_with_null_check_title(self) :
         self.data['title'] = None
 
-        response = self.client.post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {
@@ -59,7 +59,7 @@ class CreateArticleTestAPIViewTestCase(APITestCase):
     def test_create_article_with_null_check_content(self) :
         self.data['content'] = None
 
-        response = self.client.post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {
@@ -69,7 +69,7 @@ class CreateArticleTestAPIViewTestCase(APITestCase):
                         })
         
     def test_create_article(self) :
-        response = self.client.post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
@@ -86,7 +86,7 @@ class CreateArticleTestAPIViewTestCase(APITestCase):
 
 class GetArticleTestAPIViewTestCase(APITestCase):
     def setUp(self):
-        self.url = reverse('articleDetail', args=[12])
+        self.url = reverse('articleDetail', args=[1])
         self.article_factory = ArticleFactory
     
     def test_get_no_article(self):
@@ -96,7 +96,7 @@ class GetArticleTestAPIViewTestCase(APITestCase):
         self.assertIsNone(response.data['data'])
 
     def test_get_article(self):
-        self.article_factory.create_batch(10)
+        self.article_factory.create(id=1)
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

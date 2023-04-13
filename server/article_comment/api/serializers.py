@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 from blog.models import *
-from account.api.serializers import UserSerializer
+from account.api.serializers import UserDtoSerialzer
 from article_comment.models import Article_Comment
 from article_comment.api.service import Article_Comment_Service
 # from blog.api.serializers import ArticleDetailSerializer
@@ -13,7 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField()
-    user = UserSerializer(read_only=True)
+    user = UserDtoSerialzer(read_only=True)
 
 
     def create(self, validated_data):
@@ -24,16 +24,6 @@ class CommentSerializer(serializers.ModelSerializer):
         if not content :
             return serializers.ValidationError(
                 '댓글을 입력하지 않았습니다.'
-            )
-        
-        if not article_id : 
-            return serializers.ValidationError(
-                '아티클 id를 입력하지 않았습니다.'
-            )
-        
-        if not user_id : 
-            return serializers.ValidationError(
-                '유저 Id를 입력하지 않았습니다.'
             )
 
         comment = Article_Comment_Service.create(validated_data)
@@ -53,7 +43,7 @@ class CommentDetailSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField(write_only=True)
     # user = serializers.StringRelatedField(read_only=True, many=False)
-    user = UserSerializer(read_only=True)
+    user = UserDtoSerialzer(read_only=True)
 
 
 

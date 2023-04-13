@@ -9,7 +9,7 @@ class ArticleCommentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Article_Comment
     
-    content = factory.Faker('paragraph')
+    content = factory.Faker('sentence')
     user = factory.SubFactory(UserFactory)
     article = factory.SubFactory(ArticleFactory)
     created_at = factory.Faker('date_time')

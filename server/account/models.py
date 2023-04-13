@@ -84,6 +84,7 @@ def user_encode_password_pre_save(sender, instance ,**kwargs):
     
     
     elif bcrypt.checkpw(instance.password.encode('utf-8'), User.objects.get(id= instance.id).password.encode('utf-8')) == False:
+        
         updated_hashed_password  = hashed_password(instance.password.encode('utf-8'))
         updated_decoded_password = decoded_password(updated_hashed_password)
         
