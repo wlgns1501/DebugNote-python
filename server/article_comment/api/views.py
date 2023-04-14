@@ -85,10 +85,12 @@ class CommentDetailView(APIView):
     @swagger_auto_schema(tags=['댓글 상세페이지'])
     def get(self, request, comment_id : int, article_id:int) :
         try:
-            comment = Article_Comment.objects.get(id = comment_id, article_id = article_id)
+            comment = Article_Comment.objects.prefetch_related('article_reply').get(id = comment_id)
         except Article_Comment.DoesNotExist:
             return Response({"success" : False, "data" : None}, status=status.HTTP_404_NOT_FOUND)
-        
+
+        print(comment)
+
         serializer = CommentDetailSerializer(comment)
         return Response({"success" : True, "data" : serializer.data}, status=status.HTTP_200_OK)
 

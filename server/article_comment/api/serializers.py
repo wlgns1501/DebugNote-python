@@ -1,11 +1,11 @@
 from django.utils import timezone
 from rest_framework import serializers
 from blog.models import *
-from account.api.serializers import UserDtoSerialzer
+from account.api.serializers import UserDtoSerializer
 from article_comment.models import Article_Comment
 from article_comment.api.service import Article_Comment_Service
 # from blog.api.serializers import ArticleDetailSerializer
-
+from article_reply.api.serializers import ReplySerializer
 
 class CommentSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=100)
@@ -13,7 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField()
-    user = UserDtoSerialzer(read_only=True)
+    user = UserDtoSerializer(read_only=True)
 
 
     def create(self, validated_data):
@@ -42,8 +42,9 @@ class CommentDetailSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField(write_only=True)
+    article_reply = ReplySerializer(read_only=True, many=True)
     # user = serializers.StringRelatedField(read_only=True, many=False)
-    user = UserDtoSerialzer(read_only=True)
+    user = UserDtoSerializer(read_only=True)
 
 
 
@@ -56,4 +57,4 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model= Article_Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
+        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'article_reply' ,'created_at', 'updated_at']

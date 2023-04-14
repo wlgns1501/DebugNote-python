@@ -53,7 +53,7 @@ class ReplyView(APIView) :
         with transaction.atomic() :
             serializer = self.serializer_class(data=body)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response({'data' : serializer.data, 'success' : True}, status=status.HTTP_201_CREATED)
         
@@ -68,7 +68,7 @@ class ReplyDetailView(APIView) :
         try:
             return  Article_Reply_Service.get_by_user(comment_id,reply_id, user_id)
         except Reply.DoesNotExist:
-            return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return None
     
     @swagger_auto_schema(tags=['대댓글 상세페이지'])
     def get(self, request, article_id: int ,comment_id: int ,reply_id:int) :
@@ -98,12 +98,15 @@ class ReplyDetailView(APIView) :
 
         reply = self.get_one(comment_id, reply_id, user_id)
 
+        if reply is None :
+            return Response({"success" : False, "data" : "다른 사람의 글을 수정할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         body = json.loads(request.body)
 
         with transaction.atomic():
             serializer = self.serializer_class(reply, data=body)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response({'data' : serializer.data, 'success' : True}, status=status.HTTP_200_OK)
 
@@ -120,7 +123,9 @@ class ReplyDetailView(APIView) :
 
         reply = self.get_one(comment_id, reply_id, user_id)
 
-        
+        if reply is None:
+            return Response({"success" : False, "data" : "다른 사람의 글을 삭제할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
         with transaction.atomic():
             reply.delete()
             return Response({"success" : True}, status=status.HTTP_200_OK)
