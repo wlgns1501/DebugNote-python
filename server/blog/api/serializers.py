@@ -14,10 +14,9 @@ class ArticleSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(write_only = True)
     created_at = serializers.DateTimeField(read_only=True)
     user = UserDtoSerializer(read_only=True)
-    article_like = ArticleLikeSerializer(many=True, read_only=True)
-    article_comment = CommentSerializer(many=True, read_only=True)
-    # likes = serializers.IntegerField(read_only=True)
-    # comments = serializers.IntegerField(read_only =True)
+    likes = serializers.JSONField(read_only=True)
+    comments = serializers.IntegerField(read_only =True)
+    isLiked = serializers.BooleanField(read_only=True)
     
     def create(self, validated_data) :
         title = validated_data['title']
@@ -45,7 +44,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user', 'article_like', 'article_comment']
+        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user', 'likes', 'comments', 'isLiked']
 
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
