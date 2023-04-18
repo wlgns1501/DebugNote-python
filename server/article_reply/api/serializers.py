@@ -1,14 +1,15 @@
 from django.utils import timezone
-from article_reply.models import Reply
 from rest_framework import serializers
-from account.api.serializers import UserSerializer
+from article_reply.models import Reply
+from account.api.serializers import UserDtoSerialzer
 from article_reply.api.service import Article_Reply_Service
+
 
 class ReplySerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=100)
     user_id = serializers.IntegerField(write_only=True)
     comment_id = serializers.IntegerField(write_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserDtoSerialzer(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data) :
@@ -38,7 +39,7 @@ class ReplyDetailSerializer(serializers.ModelSerializer) :
     content = serializers.CharField(max_length = 100)
     user_id = serializers.IntegerField(read_only=True)
     comment_id = serializers.IntegerField(read_only = True)
-    user = UserSerializer(read_only=True)
+    user = UserDtoSerialzer(read_only=True)
     created_at = serializers.DateTimeField(read_only= True)
     updated_at =  serializers.DateTimeField(read_only=True)
 

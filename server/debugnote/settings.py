@@ -48,8 +48,8 @@ INSTALLED_APPS = [
     'django_filters',
     'article_comment',
     'article_like',
+    'article_reply',
     'adrf',
-    'article_reply'
 ]
 
 MIDDLEWARE = [

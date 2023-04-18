@@ -4,7 +4,7 @@ from blog.models import *
 from account.api.serializers import UserDtoSerialzer
 from article_comment.models import Article_Comment
 from article_comment.api.service import Article_Comment_Service
-# from blog.api.serializers import ArticleDetailSerializer
+from article_reply.api.serializers import ReplySerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -43,6 +43,7 @@ class CommentDetailSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(write_only=True)
     article_id = serializers.IntegerField(write_only=True)
     # user = serializers.StringRelatedField(read_only=True, many=False)
+    article_reply = ReplySerializer(read_only=True, many=True)
     user = UserDtoSerialzer(read_only=True)
 
 
@@ -56,4 +57,4 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model= Article_Comment
-        fields = ['id', 'content', 'user', 'article_id' , 'user_id', 'created_at', 'updated_at']
+        fields = ['id', 'content', 'user', 'article_id' ,'article_reply' , 'user_id', 'created_at', 'updated_at']
