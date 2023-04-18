@@ -125,7 +125,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'password','token' ,'nickname']
 
 
-class UserDtoSerialzer(serializers.ModelSerializer) :
+class UserDtoSerializer(serializers.ModelSerializer) :
     email = serializers.EmailField(max_length = 100)
     nickname = serializers.CharField(max_length = 100)
 

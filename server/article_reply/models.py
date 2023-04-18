@@ -9,7 +9,7 @@ class Reply(models.Model) :
     id = models.AutoField(primary_key=True)
     content = models.CharField(max_length=100, blank=False, null=False, default='')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
-    comment = models.ForeignKey(Article_Comment, on_delete=models.CASCADE, related_name='comment')
+    comment = models.ForeignKey(Article_Comment, on_delete=models.CASCADE, related_name='article_reply')
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_created=True, null=True)
 

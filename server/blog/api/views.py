@@ -2,9 +2,10 @@ import json
 from django.shortcuts import render
 from django.db import transaction, connection
 from blog.api.service import Article_Service
+from account.except_authentication import ExceptJWTAuthentication
 from .serializers import *
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -31,13 +32,22 @@ class ArticleView(APIView):
 
     @swagger_auto_schema(tags=['아티클 리스트'])
     def get(self, request) :
+        authentication_classes = [ExceptJWTAuthentication]
+
+        user = ExceptJWTAuthentication.authenticate(self, request)
+
+        if user is None:
+            user_id = None
+        else :
+            user_id = user[1]['id']
+
         try :
             article_counts = self.article_repository.get_count()
         except Article.DoesNotExist : 
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
 
         try:
-            articles = self.article_repository.get_articles()
+            articles = self.article_repository.get_articles(user_id)
         except Article.DoesNotExist : 
             return Response({'data': [], 'success' : True}, status=status.HTTP_200_OK)
 

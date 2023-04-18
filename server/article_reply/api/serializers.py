@@ -1,7 +1,11 @@
 from django.utils import timezone
 from rest_framework import serializers
+<<<<<<< HEAD
 from article_reply.models import Reply
 from account.api.serializers import UserDtoSerialzer
+=======
+from account.api.serializers import UserDtoSerializer
+>>>>>>> 64a0b6e07592e3bded869da50d58027b29cdb640
 from article_reply.api.service import Article_Reply_Service
 
 
@@ -9,7 +13,11 @@ class ReplySerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=100)
     user_id = serializers.IntegerField(write_only=True)
     comment_id = serializers.IntegerField(write_only=True)
+<<<<<<< HEAD
     user = UserDtoSerialzer(read_only=True)
+=======
+    user = UserDtoSerializer(read_only=True)
+>>>>>>> 64a0b6e07592e3bded869da50d58027b29cdb640
     created_at = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data) :
@@ -39,7 +47,11 @@ class ReplyDetailSerializer(serializers.ModelSerializer) :
     content = serializers.CharField(max_length = 100)
     user_id = serializers.IntegerField(read_only=True)
     comment_id = serializers.IntegerField(read_only = True)
+<<<<<<< HEAD
     user = UserDtoSerialzer(read_only=True)
+=======
+    user = UserDtoSerializer(read_only=True)
+>>>>>>> 64a0b6e07592e3bded869da50d58027b29cdb640
     created_at = serializers.DateTimeField(read_only= True)
     updated_at =  serializers.DateTimeField(read_only=True)
 

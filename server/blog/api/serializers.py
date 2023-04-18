@@ -5,7 +5,7 @@ from blog.models import *
 from article_like.api.serializers import ArticleLikeSerializer
 from article_comment.api.serializers import *
 from blog.api.service import Article_Service
-from account.api.serializers import UserDtoSerialzer
+from account.api.serializers import UserDtoSerializer
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -13,11 +13,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=500)
     user_id = serializers.IntegerField(write_only = True)
     created_at = serializers.DateTimeField(read_only=True)
-    user = UserDtoSerialzer(read_only=True)
-    # article_like = ArticleLikeSerializer(many=True, read_only=True)
-    # article_comment = CommentSerializer(many=True, read_only=True)
-    likes = serializers.IntegerField(read_only=True)
+    user = UserDtoSerializer(read_only=True)
+    likes = serializers.JSONField(read_only=True)
     comments = serializers.IntegerField(read_only =True)
+    isLiked = serializers.BooleanField(read_only=True)
     
     def create(self, validated_data) :
         title = validated_data['title']
@@ -45,7 +44,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user', 'likes', 'comments']
+        fields = ['id', 'title', 'content', 'created_at', 'user_id', 'user', 'likes', 'comments', 'isLiked']
 
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
@@ -53,7 +52,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     content = serializers.CharField(max_length=500)
     created_at = serializers.DateTimeField(read_only = True)
     updated_at = serializers.DateTimeField(read_only=True)
-    user = UserDtoSerialzer(read_only=True)
+    user = UserDtoSerializer(read_only=True)
     article_like = ArticleLikeSerializer(read_only=True, many=True)
     article_comment = CommentSerializer(many=True, read_only=True)
 
